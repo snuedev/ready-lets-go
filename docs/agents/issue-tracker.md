@@ -6,7 +6,7 @@ Every command takes `--board "Ready Lets Go"`. Lists and cards are addressed by 
 
 `trello <topic> --help` and `trello <topic>:<command> --help` are the source of truth for flags.
 
-Most commands take a card by `--id`, but `card:move` does not: it needs `--board` and `--card` together, and `--id` alone fails with a 400. Note that the CLI exits 0 on that failure, so check the output rather than the exit code.
+Most commands take a card by `--id`, but `card:move` and `card:assign` do not: addressing a card by `--card` means passing `--board` and `--list` (the list it is in *now*) alongside it, and `--id` alone fails with a 400. `card:assign` also wants a Trello username, which `trello board:members --board "Ready Lets Go"` prints. Note that the CLI exits 0 on that failure, so check the output rather than the exit code.
 
 ## The board
 
@@ -24,8 +24,8 @@ Cards flow left to right through these lists:
 
 1. See what is available: `trello card:list --board "Ready Lets Go" --list "To Do"`.
 2. Read the one you are taking: `trello card:get-by-id --id <card id>`, or `trello search --board "Ready Lets Go" --query "<words from the title>"` to find its ID.
-3. Claim it before writing code: `trello card:move --board "Ready Lets Go" --card "<card name>" --to "In Progress"`.
-4. Record anything the next reader would want — a decision, a blocker, the branch name: `trello card:comment --board "Ready Lets Go" --card "<card name>" --text "..."`.
+3. Claim it before writing code: `trello card:move --board "Ready Lets Go" --list "To Do" --card "<card name>" --to "In Progress"`, then `trello card:assign` with the same addressing flags.
+4. Record anything the next reader would want — a decision, a blocker, the branch name: `trello card:comment --id <card id> --text "..."`.
 5. Move it to `Done` once the work is merged and `npm run typecheck` and `npm test` pass. Ask the human first if you are unsure the work is finished.
 
 ## Capturing new work
