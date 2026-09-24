@@ -24,6 +24,17 @@ _Avoid_: Thing, entry, product
 A rule deciding whether an item applies to a given trip.
 _Avoid_: Predicate, filter, matcher
 
+**Stored condition**:
+A condition held as data rather than code, so a user-added item can carry one. Made of situations.
+
+**Situation**:
+One set of tests within a stored condition, all of which must hold. A stored condition applies if any of its situations matches; one with no situations always applies.
+_Avoid_: Group, clause, branch
+
+**Test**:
+One check inside a situation: a trip field is one of, or none of, some values, or a threshold on nights.
+_Avoid_: Filter, rule, check
+
 **Catalogue**:
 The built-in set of items shipped with the app, the same for everyone.
 _Avoid_: Master list, defaults, library
