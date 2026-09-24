@@ -1,5 +1,5 @@
-# ready-lets-go
-An app to help you pack for your next adventure
+# Ready Let's Go
+Helps a traveller decide what to take on a trip: describe the trip, get a list of what to pack, adjust it to suit yourself, tick it off as you go.
 
 ## Setup
 
