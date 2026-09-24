@@ -47,5 +47,9 @@ _Avoid_: Customisation, preference, edit
 What a particular user's generation actually runs against: the catalogue with that user's overrides applied. Computed, never stored.
 
 **Packing list**:
-The result of running one user's effective catalogue against one trip. Saved, and ticked off as the user packs.
+The result of running one user's effective catalogue against one trip. Saved as a snapshot — the items as they stood when it was generated, not recomputed on every read — and ticked off as the user packs.
 _Avoid_: Generated list, output, results
+
+**Refresh**:
+Regenerating a saved packing list against the current catalogue and showing what changed. The user asks for it; a list never reshapes on its own.
+_Avoid_: Sync, update, recompute
