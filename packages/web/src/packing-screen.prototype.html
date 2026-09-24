@@ -1,0 +1,986 @@
+<title>Packing Night</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Public+Sans:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --ground: #F6F5F1;
+    --surface: #FFFFFF;
+    --surface-sunk: #EFEEE8;
+    --ink: #1B2320;
+    --ink-soft: #46514B;
+    --muted: #6E7A73;
+    --line: #DEDCD3;
+    --line-strong: #C6C4B9;
+    --accent: #2F6B5E;
+    --accent-ink: #FFFFFF;
+    --accent-soft: #E3EEE9;
+    --chrome: #1B2320;
+    --chrome-ink: #F6F5F1;
+    --radius: 10px;
+    --display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+    --body: "Public Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #14181A;
+      --surface: #1C2124;
+      --surface-sunk: #101416;
+      --ink: #E9EDEA;
+      --ink-soft: #BFC8C3;
+      --muted: #8B968F;
+      --line: #2B3235;
+      --line-strong: #3C4448;
+      --accent: #6BBFA6;
+      --accent-ink: #10201B;
+      --accent-soft: #1D2E29;
+      --chrome: #E9EDEA;
+      --chrome-ink: #14181A;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground: #14181A;
+    --surface: #1C2124;
+    --surface-sunk: #101416;
+    --ink: #E9EDEA;
+    --ink-soft: #BFC8C3;
+    --muted: #8B968F;
+    --line: #2B3235;
+    --line-strong: #3C4448;
+    --accent: #6BBFA6;
+    --accent-ink: #10201B;
+    --accent-soft: #1D2E29;
+    --chrome: #E9EDEA;
+    --chrome-ink: #14181A;
+  }
+
+  html, body { height: 100%; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 15px;
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  * { box-sizing: border-box; }
+
+  #app {
+    min-height: 100%;
+    padding-bottom: 104px;
+  }
+
+  button, input, select { font: inherit; color: inherit; }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  input[type="checkbox"] {
+    accent-color: var(--accent);
+    width: 20px;
+    height: 20px;
+    flex: none;
+    cursor: pointer;
+  }
+
+  .tag {
+    font-family: var(--display);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .count { font-variant-numeric: tabular-nums; }
+
+  .note {
+    font-size: 12.5px;
+    color: var(--muted);
+    line-height: 1.35;
+  }
+
+  .qty {
+    font-family: var(--display);
+    font-variant-numeric: tabular-nums;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+  }
+
+  .packed-name { color: var(--muted); text-decoration: line-through; text-decoration-thickness: 1px; }
+
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field > label { font-family: var(--display); font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+
+  .control {
+    background: var(--surface);
+    border: 1px solid var(--line-strong);
+    border-radius: 8px;
+    padding: 8px 10px;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .chipset { display: flex; flex-wrap: wrap; gap: 6px; }
+
+  .chip {
+    font-family: var(--display);
+    font-size: 12.5px;
+    font-weight: 500;
+    padding: 6px 11px;
+    border-radius: 999px;
+    border: 1px solid var(--line-strong);
+    background: var(--surface);
+    color: var(--ink-soft);
+    cursor: pointer;
+  }
+
+  .chip[aria-pressed="true"] {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--accent-ink);
+  }
+
+  .cat-toggle {
+    width: 100%;
+    background: none;
+    border: 0;
+    padding: 0;
+    text-align: left;
+    cursor: pointer;
+    font: inherit;
+  }
+
+  .cat-left { display: flex; align-items: center; gap: 7px; min-width: 0; }
+
+  .chev {
+    display: inline-block;
+    font-size: 9px;
+    color: var(--muted);
+    transition: transform 140ms ease;
+    flex: none;
+  }
+
+  .cat-toggle[aria-expanded="false"] .chev { transform: rotate(-90deg); }
+  .cat-toggle:hover .tag { color: var(--accent); }
+  .cat-toggle:hover .chev { color: var(--accent); }
+
+  .toggle-all {
+    font-family: var(--display);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    background: none;
+    border: 0;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 2px 0;
+    white-space: nowrap;
+  }
+
+  .toggle-all:hover { color: var(--accent); }
+
+  .bar-track { height: 4px; background: var(--surface-sunk); border-radius: 999px; overflow: hidden; }
+  .bar-fill { height: 100%; background: var(--accent); border-radius: 999px; transition: width 180ms ease; }
+
+  .ghost-add {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    background: none;
+    border: 1px dashed var(--line-strong);
+    border-radius: 8px;
+    padding: 9px 12px;
+    color: var(--muted);
+    font-family: var(--display);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: left;
+  }
+
+  .ghost-add:hover { border-color: var(--accent); color: var(--accent); }
+
+  .primary {
+    font-family: var(--display);
+    font-weight: 600;
+    background: var(--accent);
+    color: var(--accent-ink);
+    border: 1px solid var(--accent);
+    border-radius: 8px;
+    padding: 9px 16px;
+    cursor: pointer;
+  }
+
+  .quiet {
+    font-family: var(--display);
+    font-weight: 500;
+    background: var(--surface);
+    color: var(--ink-soft);
+    border: 1px solid var(--line-strong);
+    border-radius: 8px;
+    padding: 9px 14px;
+    cursor: pointer;
+  }
+
+  /* ─── Variant A ─────────────────────────────────────────── */
+
+  .a-wrap { max-width: 660px; margin: 0 auto; padding: 0 16px; padding-block: 20px 8px; }
+
+  .a-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; margin-bottom: 14px; }
+  .a-head h1 { font-family: var(--display); font-size: 25px; font-weight: 700; letter-spacing: -0.015em; margin: 0; }
+  .a-summary { font-size: 13.5px; color: var(--muted); }
+
+  .a-form {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 14px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(128px, 1fr));
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .a-form .span-all { grid-column: 1 / -1; }
+
+  .a-progress { display: flex; align-items: center; gap: 12px; margin: 16px 0 20px; }
+  .a-progress .tag { white-space: nowrap; }
+  .a-progress .bar-track { flex: 1; }
+
+  .a-cat { margin-bottom: 22px; }
+  .a-cat-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding-bottom: 7px; border-bottom: 1px solid var(--line); margin-bottom: 4px; }
+
+  .a-row { display: flex; align-items: flex-start; gap: 11px; padding: 9px 2px; border-bottom: 1px solid var(--line); }
+  .a-row:last-of-type { border-bottom: 0; }
+  .a-row label { flex: 1; cursor: pointer; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; }
+  .a-row .note { flex-basis: 100%; }
+
+  /* ─── Variant B ─────────────────────────────────────────── */
+
+  .b-wrap { display: flex; flex-direction: column; min-height: 100%; }
+
+  .b-top { padding: 14px 16px 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+  .b-trip {
+    background: var(--surface);
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    padding: 6px 13px;
+    font-size: 13px;
+    color: var(--ink-soft);
+    cursor: pointer;
+    font-family: var(--display);
+  }
+
+  .b-segments { display: flex; gap: 4px; flex: 1; min-width: 140px; }
+  .b-seg { flex: 1; height: 4px; border-radius: 999px; background: var(--surface-sunk); overflow: hidden; border: 0; padding: 0; cursor: pointer; }
+  .b-seg span { display: block; height: 100%; background: var(--accent); }
+  .b-seg[aria-current="true"] { box-shadow: 0 0 0 2px var(--accent-soft); }
+
+  .b-stage { flex: 1; padding: 0 16px; padding-block: 26px 12px; max-width: 560px; margin: 0 auto; width: 100%; }
+
+  .b-cat-name { font-family: var(--display); font-size: 33px; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 2px; text-wrap: balance; }
+  .b-cat-count { font-family: var(--display); font-size: 14px; font-weight: 500; color: var(--muted); font-variant-numeric: tabular-nums; margin-bottom: 20px; }
+
+  .b-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    width: 100%;
+    text-align: left;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 15px 16px;
+    margin-bottom: 9px;
+    cursor: pointer;
+  }
+
+  .b-item[data-packed="true"] { background: var(--accent-soft); border-color: transparent; }
+
+  .b-box {
+    flex: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    border: 1.5px solid var(--line-strong);
+    display: grid;
+    place-items: center;
+    font-size: 13px;
+    line-height: 1;
+    margin-top: 1px;
+  }
+
+  .b-item[data-packed="true"] .b-box { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .b-item-name { flex: 1; font-size: 16.5px; font-weight: 500; }
+  .b-item .note { flex-basis: 100%; margin-top: 3px; }
+
+  .b-nav { position: sticky; bottom: 0; display: flex; gap: 10px; padding: 12px 16px 16px; max-width: 560px; margin: 0 auto; width: 100%; background: linear-gradient(to top, var(--ground) 55%, transparent); }
+  .b-nav button { flex: 1; }
+
+  .b-sheet { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; margin: 12px 0 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); gap: 12px; }
+  .b-sheet .span-all { grid-column: 1 / -1; }
+
+  /* ─── Variant C ─────────────────────────────────────────── */
+
+  .c-wrap { display: grid; grid-template-columns: 252px 1fr; gap: 0; min-height: 100%; }
+
+  .c-rail {
+    border-right: 1px solid var(--line);
+    background: var(--surface);
+    padding: 18px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    align-content: start;
+  }
+
+  .c-rail h1 { font-family: var(--display); font-size: 17px; font-weight: 700; margin: 0; letter-spacing: -0.01em; }
+
+  .c-live {
+    background: var(--surface-sunk);
+    border-radius: 8px;
+    padding: 11px 12px;
+  }
+  .c-live-num { font-family: var(--display); font-size: 27px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+
+  .c-main { padding: 18px 16px; min-width: 0; }
+
+  .c-tools { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+  .c-tools input[type="search"] { flex: 1; min-width: 150px; }
+
+  .c-addrow {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+    background: var(--accent-soft);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 18px;
+  }
+  .c-addrow input[type="text"] { flex: 2; min-width: 130px; background: var(--surface); }
+  .c-addrow select { flex: 1; min-width: 116px; background: var(--surface); }
+
+  .c-grid { columns: 2; column-gap: 26px; }
+  .c-cat { break-inside: avoid; margin-bottom: 16px; }
+  .c-cat-head { display: flex; justify-content: space-between; gap: 8px; border-bottom: 1px solid var(--line-strong); padding-bottom: 5px; margin-bottom: 3px; }
+  .c-row { display: flex; align-items: flex-start; gap: 9px; padding: 5px 0; }
+  .c-row label { flex: 1; cursor: pointer; font-size: 14px; display: flex; flex-wrap: wrap; align-items: baseline; gap: 3px 7px; }
+  .c-cond { font-family: var(--display); font-size: 10.5px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; background: var(--accent-soft); color: var(--accent); padding: 1px 6px; border-radius: 999px; }
+
+  @media (max-width: 800px) {
+    .c-wrap { grid-template-columns: 1fr; }
+    .c-rail { border-right: 0; border-bottom: 1px solid var(--line); }
+    .c-grid { columns: 1; }
+  }
+
+  /* ─── Prototype chrome ──────────────────────────────────── */
+
+  #chrome {
+    position: fixed;
+    left: 50%;
+    bottom: 0;
+    transform: translateX(-50%);
+    z-index: 50;
+    padding: 0 12px;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    width: 100%;
+    max-width: 520px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    pointer-events: none;
+  }
+
+  #chrome > * { pointer-events: auto; }
+
+  .chrome-q {
+    font-family: var(--display);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--muted);
+    background: var(--ground);
+    padding: 2px 10px;
+    border-radius: 999px;
+    text-align: center;
+  }
+
+  .chrome-bar {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--chrome);
+    color: var(--chrome-ink);
+    border-radius: 999px;
+    padding: 5px 6px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.22);
+    max-width: 100%;
+  }
+
+  .chrome-bar button {
+    background: none;
+    border: 0;
+    color: inherit;
+    cursor: pointer;
+    border-radius: 999px;
+    width: 32px;
+    height: 32px;
+    font-size: 15px;
+    flex: none;
+  }
+
+  .chrome-bar button:hover { background: rgba(127, 127, 127, 0.28); }
+
+  .chrome-label {
+    font-family: var(--display);
+    font-size: 12.5px;
+    font-weight: 600;
+    padding: 0 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .chrome-label b { opacity: 0.55; font-weight: 600; margin-right: 5px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+</style>
+
+<div id="app"></div>
+
+<div id="chrome">
+  <div class="chrome-q">Prototype &middot; bedroom, night before the trip &middot; &larr; &rarr; to switch</div>
+  <div class="chrome-bar">
+    <button id="prev" type="button" aria-label="Previous variant">&#9664;</button>
+    <span class="chrome-label" id="chrome-label"></span>
+    <button id="next" type="button" aria-label="Next variant">&#9654;</button>
+  </div>
+</div>
+
+<script>
+  const CLIMATES = ["freezing", "cold", "mild", "hot"];
+  const ACCOMMODATIONS = ["tent", "hostel", "hotel", "friends", "cabin"];
+  const TRANSPORTS = ["plane", "car", "train", "foot"];
+  const ACTIVITIES = ["hiking", "swimming", "festival", "business", "formal-event", "photography", "cooking"];
+
+  const CATEGORY_ORDER = [
+    "Documents", "Clothing", "Sleep", "Toiletries", "Health & safety",
+    "Electronics", "Food & cooking", "Activity gear", "Comfort",
+  ];
+
+  const always = () => true;
+  const doing = (...a) => (t) => a.some((x) => t.activities.includes(x));
+  const inClimate = (...c) => (t) => c.includes(t.climate);
+  const selfCatering = (t) => t.accommodation === "tent" || t.accommodation === "cabin";
+  const carryingEverything = (t) => t.transport === "foot" || t.accommodation === "tent";
+  const longerThan = (n) => (t) => t.nights > n;
+  const all = (...cs) => (t) => cs.every((c) => c(t));
+  const perNight = (rate, cap = Infinity) => (t) => Math.min(Math.ceil(t.nights * rate), cap);
+  const outfitsFor = (t) => (t.laundryAvailable ? Math.min(t.nights + 1, 4) : t.nights + 1);
+
+  const CATALOG = [
+    { name: "Passport", category: "Documents", appliesTo: (t) => t.international },
+    { name: "Travel insurance details", category: "Documents", appliesTo: (t) => t.international },
+    { name: "Tickets / booking confirmations", category: "Documents", appliesTo: (t) => t.transport !== "foot" },
+    { name: "Wallet, bank card and some cash", category: "Documents", appliesTo: always },
+    { name: "Festival wristband or entry ticket", category: "Documents", appliesTo: doing("festival") },
+
+    { name: "Tent", category: "Sleep", appliesTo: (t) => t.accommodation === "tent" },
+    { name: "Sleeping bag", category: "Sleep", appliesTo: (t) => t.accommodation === "tent", note: "Check the comfort rating against the coldest night" },
+    { name: "Sleeping mat", category: "Sleep", appliesTo: (t) => t.accommodation === "tent" },
+    { name: "Pillow", category: "Sleep", appliesTo: (t) => t.accommodation === "tent" },
+    { name: "Travel towel", category: "Sleep", appliesTo: (t) => t.accommodation === "tent" || t.accommodation === "hostel" },
+    { name: "Earplugs and eye mask", category: "Sleep", appliesTo: (t) => t.accommodation === "hostel" || t.activities.includes("festival") },
+    { name: "Padlock", category: "Sleep", appliesTo: (t) => t.accommodation === "hostel" },
+
+    { name: "T-shirts", category: "Clothing", appliesTo: always, quantity: outfitsFor },
+    { name: "Underwear", category: "Clothing", appliesTo: always, quantity: (t) => t.nights + 1 },
+    { name: "Socks", category: "Clothing", appliesTo: always, quantity: (t) => t.nights + 1 },
+    { name: "Trousers", category: "Clothing", appliesTo: always, quantity: perNight(0.34, 3) },
+    { name: "Warm mid layer", category: "Clothing", appliesTo: inClimate("freezing", "cold", "mild") },
+    { name: "Insulated jacket", category: "Clothing", appliesTo: inClimate("freezing") },
+    { name: "Hat, gloves and scarf", category: "Clothing", appliesTo: inClimate("freezing") },
+    { name: "Thermal base layers", category: "Clothing", appliesTo: inClimate("freezing", "cold") },
+    { name: "Waterproof jacket", category: "Clothing", appliesTo: inClimate("freezing", "cold", "mild") },
+    { name: "Sun hat", category: "Clothing", appliesTo: inClimate("hot") },
+    { name: "Swimwear", category: "Clothing", appliesTo: doing("swimming") },
+    { name: "Smart outfit", category: "Clothing", appliesTo: doing("formal-event", "business") },
+    { name: "Walking boots", category: "Clothing", appliesTo: doing("hiking") },
+    { name: "Wellies", category: "Clothing", appliesTo: all(doing("festival"), inClimate("mild", "cold")), note: "Festival fields turn to mud the moment it rains" },
+
+    { name: "Toothbrush and toothpaste", category: "Toiletries", appliesTo: always },
+    { name: "Shower kit", category: "Toiletries", appliesTo: (t) => t.accommodation !== "hotel" },
+    { name: "Deodorant", category: "Toiletries", appliesTo: always },
+    { name: "Sunscreen", category: "Toiletries", appliesTo: (t) => t.climate === "hot" || t.activities.includes("hiking") || t.activities.includes("swimming") },
+    { name: "Insect repellent", category: "Toiletries", appliesTo: all(inClimate("mild", "hot"), selfCatering) },
+    { name: "Wet wipes", category: "Toiletries", appliesTo: (t) => t.accommodation === "tent" || t.activities.includes("festival") },
+
+    { name: "Phone and charger", category: "Electronics", appliesTo: always },
+    { name: "Power bank", category: "Electronics", appliesTo: (t) => t.accommodation === "tent" || t.activities.includes("festival") },
+    { name: "Travel plug adapter", category: "Electronics", appliesTo: (t) => t.international },
+    { name: "Headphones", category: "Electronics", appliesTo: (t) => t.transport === "plane" || t.transport === "train" },
+    { name: "Camera and spare batteries", category: "Electronics", appliesTo: doing("photography") },
+    { name: "Laptop", category: "Electronics", appliesTo: doing("business") },
+    { name: "Head torch", category: "Electronics", appliesTo: (t) => t.accommodation === "tent" || t.activities.includes("festival") },
+
+    { name: "Camping stove and fuel", category: "Food & cooking", appliesTo: all(selfCatering, doing("cooking")) },
+    { name: "Pot, mug and cutlery", category: "Food & cooking", appliesTo: selfCatering },
+    { name: "Water bottle", category: "Food & cooking", appliesTo: always },
+    { name: "Breakfast supplies", category: "Food & cooking", appliesTo: selfCatering, quantity: perNight(1) },
+    { name: "Snacks for the journey", category: "Food & cooking", appliesTo: (t) => t.transport !== "foot" },
+    { name: "Rubbish bags", category: "Food & cooking", appliesTo: selfCatering },
+
+    { name: "First aid kit", category: "Health & safety", appliesTo: always },
+    { name: "Any regular medication", category: "Health & safety", appliesTo: always, note: "Pack a few days spare in case of delays" },
+    { name: "Blister plasters", category: "Health & safety", appliesTo: doing("hiking", "festival") },
+    { name: "Paper map and compass", category: "Health & safety", appliesTo: doing("hiking"), note: "Phone signal and battery both run out" },
+    { name: "Emergency contacts written down", category: "Health & safety", appliesTo: (t) => t.international },
+
+    { name: "Daypack", category: "Activity gear", appliesTo: doing("hiking", "photography", "festival") },
+    { name: "Dry bag", category: "Activity gear", appliesTo: all(carryingEverything, inClimate("freezing", "cold", "mild")) },
+    { name: "Trekking poles", category: "Activity gear", appliesTo: doing("hiking") },
+    { name: "Folding chair", category: "Activity gear", appliesTo: all(doing("festival"), (t) => t.transport === "car") },
+
+    { name: "Book", category: "Comfort", appliesTo: always },
+    { name: "Laundry bag", category: "Comfort", appliesTo: longerThan(3) },
+    { name: "Reusable coffee cup", category: "Comfort", appliesTo: (t) => t.transport !== "foot" },
+  ];
+
+  const state = {
+    trip: {
+      nights: 5,
+      climate: "cold",
+      accommodation: "tent",
+      transport: "car",
+      activities: ["hiking"],
+      laundryAvailable: false,
+      international: false,
+    },
+    packed: new Set(["Wallet, bank card and some cash", "Phone and charger", "Walking boots"]),
+    mine: [],
+    catIndex: 0,
+    collapsed: new Set(),
+    tripOpen: false,
+    search: "",
+    draft: { name: "", category: "Clothing", when: "always" },
+  };
+
+  const CONDITION_CHOICES = [
+    { value: "always", label: "always" },
+    ...ACTIVITIES.map((a) => ({ value: "doing:" + a, label: "when " + a })),
+    ...CLIMATES.map((c) => ({ value: "climate:" + c, label: "when " + c })),
+  ];
+
+  const conditionLabel = (when) => {
+    const found = CONDITION_CHOICES.find((c) => c.value === when);
+    return found ? found.label : "always";
+  };
+
+  const matchesCondition = (when, trip) => {
+    if (!when || when === "always") return true;
+    const [kind, value] = when.split(":");
+    if (kind === "doing") return trip.activities.includes(value);
+    if (kind === "climate") return trip.climate === value;
+    return true;
+  };
+
+  function generate(trip) {
+    const mine = state.mine.map((m) => ({
+      name: m.name,
+      category: m.category,
+      mine: true,
+      when: m.when,
+      appliesTo: (t) => matchesCondition(m.when, t),
+      quantity: m.quantity ? () => m.quantity : undefined,
+    }));
+
+    const matched = CATALOG.concat(mine).filter((item) => item.appliesTo(trip));
+
+    const groups = CATEGORY_ORDER.map((category) => ({
+      category,
+      items: matched
+        .filter((item) => item.category === category)
+        .map((item) => ({
+          name: item.name,
+          category: item.category,
+          mine: Boolean(item.mine),
+          when: item.when,
+          note: item.note,
+          quantity: item.quantity ? Math.max(1, item.quantity(trip)) : 1,
+        })),
+    })).filter((group) => group.items.length > 0);
+
+    return { groups, totalItems: matched.length };
+  }
+
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const slug = (s) => String(s).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  const isPacked = (name) => state.packed.has(name);
+  const describeTrip = (t) =>
+    `${t.nights} night${t.nights === 1 ? "" : "s"} · ${t.climate} · ${t.accommodation} · by ${t.transport}` +
+    (t.activities.length ? " · " + t.activities.join(", ") : "");
+
+  const packedIn = (items) => items.filter((i) => isPacked(i.name)).length;
+  const allCollapsed = (groups) => groups.length > 0 && groups.every((g) => state.collapsed.has(g.category));
+
+  function tripFields(idPrefix) {
+    const t = state.trip;
+    const opt = (list, current) =>
+      list.map((v) => `<option value="${v}"${v === current ? " selected" : ""}>${v}</option>`).join("");
+    return `
+      <div class="field">
+        <label for="${idPrefix}-nights">Nights</label>
+        <input class="control" type="number" id="${idPrefix}-nights" data-trip="nights" min="1" max="60" value="${t.nights}">
+      </div>
+      <div class="field">
+        <label for="${idPrefix}-climate">Climate</label>
+        <select class="control" id="${idPrefix}-climate" data-trip="climate">${opt(CLIMATES, t.climate)}</select>
+      </div>
+      <div class="field">
+        <label for="${idPrefix}-accommodation">Staying in</label>
+        <select class="control" id="${idPrefix}-accommodation" data-trip="accommodation">${opt(ACCOMMODATIONS, t.accommodation)}</select>
+      </div>
+      <div class="field">
+        <label for="${idPrefix}-transport">Getting there by</label>
+        <select class="control" id="${idPrefix}-transport" data-trip="transport">${opt(TRANSPORTS, t.transport)}</select>
+      </div>
+      <div class="field span-all">
+        <span class="tag">Doing</span>
+        <div class="chipset">
+          ${ACTIVITIES.map((a) => `<button class="chip" type="button" data-activity="${a}" aria-pressed="${t.activities.includes(a)}">${a}</button>`).join("")}
+        </div>
+      </div>
+      <div class="field span-all">
+        <span class="tag">Also</span>
+        <div class="chipset">
+          <button class="chip" type="button" data-flag="international" aria-pressed="${t.international}">going abroad</button>
+          <button class="chip" type="button" data-flag="laundryAvailable" aria-pressed="${t.laundryAvailable}">laundry there</button>
+        </div>
+      </div>`;
+  }
+
+  function renderA() {
+    const list = generate(state.trip);
+    const packed = list.groups.reduce((n, g) => n + packedIn(g.items), 0);
+    const pct = list.totalItems ? Math.round((packed / list.totalItems) * 100) : 0;
+
+    return `
+      <div class="a-wrap">
+        <div class="a-head">
+          <h1>What to pack</h1>
+          <span class="a-summary">${esc(describeTrip(state.trip))}</span>
+        </div>
+
+        <div class="a-form">${tripFields("a")}</div>
+
+        <div class="a-progress">
+          <span class="tag count">${packed} of ${list.totalItems} packed</span>
+          <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+          <button class="toggle-all" type="button" id="toggle-all">${allCollapsed(list.groups) ? "Expand all" : "Collapse all"}</button>
+        </div>
+
+        ${list.groups.map((g) => {
+          const open = !state.collapsed.has(g.category);
+          return `
+          <section class="a-cat">
+            <button class="a-cat-head cat-toggle" type="button" data-collapse="${esc(g.category)}" aria-expanded="${open}" aria-controls="a-body-${slug(g.category)}">
+              <span class="cat-left">
+                <span class="chev">&#9660;</span>
+                <span class="tag">${esc(g.category)}</span>
+              </span>
+              <span class="tag count">${packedIn(g.items)}/${g.items.length}</span>
+            </button>
+            <div id="a-body-${slug(g.category)}"${open ? "" : " hidden"}>
+              ${g.items.map((i) => `
+                <div class="a-row">
+                  <input type="checkbox" id="a-${slug(i.name)}" data-pack="${esc(i.name)}"${isPacked(i.name) ? " checked" : ""}>
+                  <label for="a-${slug(i.name)}">
+                    <span class="${isPacked(i.name) ? "packed-name" : ""}">${esc(i.name)}</span>
+                    ${i.quantity > 1 ? `<span class="qty">&times;${i.quantity}</span>` : ""}
+                    ${i.mine ? `<span class="c-cond">mine &middot; ${esc(conditionLabel(i.when))}</span>` : ""}
+                    ${i.note ? `<span class="note">${esc(i.note)}</span>` : ""}
+                  </label>
+                </div>`).join("")}
+              <div class="a-row" style="border:0">
+                <button class="ghost-add" type="button" data-add-to="${esc(g.category)}">+ Add something to ${esc(g.category.toLowerCase())}</button>
+              </div>
+            </div>
+          </section>`;
+        }).join("")}
+      </div>`;
+  }
+
+  function renderB() {
+    const list = generate(state.trip);
+    const index = Math.min(state.catIndex, list.groups.length - 1);
+    const group = list.groups[index];
+    const done = packedIn(group.items);
+
+    return `
+      <div class="b-wrap">
+        <div class="b-top">
+          <button class="b-trip" type="button" id="b-trip-toggle">${esc(describeTrip(state.trip))}</button>
+          <div class="b-segments">
+            ${list.groups.map((g, n) => {
+              const p = g.items.length ? (packedIn(g.items) / g.items.length) * 100 : 0;
+              return `<button class="b-seg" type="button" data-goto="${n}" aria-current="${n === index}" aria-label="${esc(g.category)}"><span style="width:${p}%"></span></button>`;
+            }).join("")}
+          </div>
+        </div>
+
+        ${state.tripOpen ? `<div class="b-stage" style="padding-block:0"><div class="b-sheet">${tripFields("b")}</div></div>` : ""}
+
+        <div class="b-stage">
+          <h1 class="b-cat-name">${esc(group.category)}</h1>
+          <div class="b-cat-count">${done} of ${group.items.length} in the bag</div>
+
+          ${group.items.map((i) => `
+            <button class="b-item" type="button" data-pack="${esc(i.name)}" data-packed="${isPacked(i.name)}" aria-pressed="${isPacked(i.name)}">
+              <span class="b-box" aria-hidden="true">${isPacked(i.name) ? "&#10003;" : ""}</span>
+              <span class="b-item-name ${isPacked(i.name) ? "packed-name" : ""}">${esc(i.name)}</span>
+              ${i.quantity > 1 ? `<span class="qty">&times;${i.quantity}</span>` : ""}
+              ${i.note ? `<span class="note">${esc(i.note)}</span>` : ""}
+            </button>`).join("")}
+
+          <button class="ghost-add" type="button" data-add-to="${esc(group.category)}">+ Add something to ${esc(group.category.toLowerCase())}</button>
+        </div>
+
+        <div class="b-nav">
+          <button class="quiet" type="button" data-goto="${(index - 1 + list.groups.length) % list.groups.length}">&larr; ${esc(list.groups[(index - 1 + list.groups.length) % list.groups.length].category)}</button>
+          <button class="primary" type="button" data-goto="${(index + 1) % list.groups.length}">${esc(list.groups[(index + 1) % list.groups.length].category)} &rarr;</button>
+        </div>
+      </div>`;
+  }
+
+  function renderC() {
+    const list = generate(state.trip);
+    const packed = list.groups.reduce((n, g) => n + packedIn(g.items), 0);
+    const q = state.search.trim().toLowerCase();
+    const groups = list.groups
+      .map((g) => ({ ...g, items: q ? g.items.filter((i) => i.name.toLowerCase().includes(q)) : g.items }))
+      .filter((g) => g.items.length > 0);
+
+    return `
+      <div class="c-wrap">
+        <aside class="c-rail">
+          <h1>Plan the trip</h1>
+          <div class="c-live">
+            <div class="c-live-num">${list.totalItems}</div>
+            <div class="tag">items suggested</div>
+          </div>
+          ${tripFields("c")}
+        </aside>
+
+        <main class="c-main">
+          <div class="c-tools">
+            <input class="control" type="search" id="c-search" placeholder="Find an item" value="${esc(state.search)}">
+            <span class="tag count" style="align-self:center">${packed} packed</span>
+            <button class="toggle-all" type="button" id="toggle-all">${allCollapsed(groups) ? "Expand all" : "Collapse all"}</button>
+          </div>
+
+          <div class="c-addrow">
+            <input class="control" type="text" id="c-new-name" placeholder="Something of your own" value="${esc(state.draft.name)}">
+            <select class="control" id="c-new-category">
+              ${CATEGORY_ORDER.map((c) => `<option value="${c}"${c === state.draft.category ? " selected" : ""}>${c}</option>`).join("")}
+            </select>
+            <select class="control" id="c-new-when">
+              ${CONDITION_CHOICES.map((c) => `<option value="${c.value}"${c.value === state.draft.when ? " selected" : ""}>${c.label}</option>`).join("")}
+            </select>
+            <button class="primary" type="button" id="c-add">Add</button>
+          </div>
+
+          <div class="c-grid">
+            ${groups.map((g) => {
+              const open = Boolean(q) || !state.collapsed.has(g.category);
+              return `
+              <section class="c-cat">
+                <button class="c-cat-head cat-toggle" type="button" data-collapse="${esc(g.category)}" aria-expanded="${open}" aria-controls="c-body-${slug(g.category)}">
+                  <span class="cat-left">
+                    <span class="chev">&#9660;</span>
+                    <span class="tag">${esc(g.category)}</span>
+                  </span>
+                  <span class="tag count">${packedIn(g.items)}/${g.items.length}</span>
+                </button>
+                <div id="c-body-${slug(g.category)}"${open ? "" : " hidden"}>
+                  ${g.items.map((i) => `
+                    <div class="c-row">
+                      <input type="checkbox" id="c-${slug(i.name)}" data-pack="${esc(i.name)}"${isPacked(i.name) ? " checked" : ""}>
+                      <label for="c-${slug(i.name)}">
+                        <span class="${isPacked(i.name) ? "packed-name" : ""}">${esc(i.name)}</span>
+                        ${i.quantity > 1 ? `<span class="qty">&times;${i.quantity}</span>` : ""}
+                        ${i.mine ? `<span class="c-cond">${esc(conditionLabel(i.when))}</span>` : ""}
+                      </label>
+                    </div>`).join("")}
+                </div>
+              </section>`;
+            }).join("")}
+          </div>
+        </main>
+      </div>`;
+  }
+
+  const VARIANTS = [
+    { key: "A", name: "Form, then list", render: renderA },
+    { key: "B", name: "One pile at a time", render: renderB },
+    { key: "C", name: "Live trip knobs", render: renderC },
+  ];
+
+  const app = document.getElementById("app");
+  const label = document.getElementById("chrome-label");
+
+  function currentIndex() {
+    const key = (new URLSearchParams(location.search).get("variant") || "A").toUpperCase();
+    const found = VARIANTS.findIndex((v) => v.key === key);
+    return found === -1 ? 0 : found;
+  }
+
+  function render() {
+    const variant = VARIANTS[currentIndex()];
+    app.innerHTML = variant.render();
+    label.innerHTML = `<b>${variant.key}</b>${esc(variant.name)}`;
+  }
+
+  function go(delta) {
+    const next = VARIANTS[(currentIndex() + delta + VARIANTS.length) % VARIANTS.length];
+    const url = new URL(location.href);
+    url.searchParams.set("variant", next.key);
+    history.replaceState(null, "", url);
+    render();
+  }
+
+  document.getElementById("prev").addEventListener("click", () => go(-1));
+  document.getElementById("next").addEventListener("click", () => go(1));
+
+  document.addEventListener("keydown", (e) => {
+    const el = document.activeElement;
+    if (el && (el.matches("input, select, textarea") || el.isContentEditable)) return;
+    if (e.key === "ArrowLeft") go(-1);
+    if (e.key === "ArrowRight") go(1);
+  });
+
+  function addMine(category) {
+    const name = (prompt("What are you adding to " + category + "?") || "").trim();
+    if (!name) return;
+    state.mine.push({ name, category, when: "always" });
+    state.packed.delete(name);
+    render();
+  }
+
+  app.addEventListener("click", (e) => {
+    const packTarget = e.target.closest("[data-pack]");
+    if (packTarget) {
+      const name = packTarget.getAttribute("data-pack");
+      if (packTarget.tagName === "INPUT") {
+        if (packTarget.checked) state.packed.add(name); else state.packed.delete(name);
+      } else {
+        if (state.packed.has(name)) state.packed.delete(name); else state.packed.add(name);
+      }
+      render();
+      return;
+    }
+
+    const activity = e.target.closest("[data-activity]");
+    if (activity) {
+      const a = activity.getAttribute("data-activity");
+      const list = state.trip.activities;
+      state.trip.activities = list.includes(a) ? list.filter((x) => x !== a) : list.concat(a);
+      render();
+      return;
+    }
+
+    const flag = e.target.closest("[data-flag]");
+    if (flag) {
+      const f = flag.getAttribute("data-flag");
+      state.trip[f] = !state.trip[f];
+      render();
+      return;
+    }
+
+    const collapse = e.target.closest("[data-collapse]");
+    if (collapse) {
+      const category = collapse.getAttribute("data-collapse");
+      if (state.collapsed.has(category)) state.collapsed.delete(category); else state.collapsed.add(category);
+      render();
+      return;
+    }
+
+    if (e.target.closest("#toggle-all")) {
+      const categories = generate(state.trip).groups.map((g) => g.category);
+      if (allCollapsed(categories.map((category) => ({ category })))) state.collapsed.clear();
+      else categories.forEach((category) => state.collapsed.add(category));
+      render();
+      return;
+    }
+
+    const goto = e.target.closest("[data-goto]");
+    if (goto) {
+      state.catIndex = Number(goto.getAttribute("data-goto"));
+      render();
+      return;
+    }
+
+    const addTo = e.target.closest("[data-add-to]");
+    if (addTo) {
+      addMine(addTo.getAttribute("data-add-to"));
+      return;
+    }
+
+    if (e.target.closest("#b-trip-toggle")) {
+      state.tripOpen = !state.tripOpen;
+      render();
+      return;
+    }
+
+    if (e.target.closest("#c-add")) {
+      const nameEl = document.getElementById("c-new-name");
+      const name = (nameEl.value || "").trim();
+      if (!name) { nameEl.focus(); return; }
+      state.mine.push({
+        name,
+        category: document.getElementById("c-new-category").value,
+        when: document.getElementById("c-new-when").value,
+      });
+      state.draft = { name: "", category: state.draft.category, when: state.draft.when };
+      render();
+    }
+  });
+
+  app.addEventListener("change", (e) => {
+    const trip = e.target.closest("[data-trip]");
+    if (!trip) return;
+    const key = trip.getAttribute("data-trip");
+    state.trip[key] = key === "nights" ? Math.max(1, Number(trip.value) || 1) : trip.value;
+    if (key === "nights") state.catIndex = Math.max(0, state.catIndex);
+    render();
+  });
+
+  app.addEventListener("input", (e) => {
+    if (e.target.id === "c-search") {
+      state.search = e.target.value;
+      const at = e.target.selectionStart;
+      render();
+      const again = document.getElementById("c-search");
+      if (again) { again.focus(); again.setSelectionRange(at, at); }
+      return;
+    }
+    if (e.target.id === "c-new-name") state.draft.name = e.target.value;
+    if (e.target.id === "c-new-category") state.draft.category = e.target.value;
+    if (e.target.id === "c-new-when") state.draft.when = e.target.value;
+  });
+
+  render();
+</script>
