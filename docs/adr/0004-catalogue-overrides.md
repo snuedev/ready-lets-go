@@ -4,4 +4,4 @@ Once users can add their own items, the built-in catalogue could have been copie
 
 ## Consequences
 
-There is no single table that is "the catalogue": reading a user's items always means base plus overrides. A user-added item cannot carry a TypeScript function, so how it expresses its condition is an open question, tracked on the map.
+There is no single table that is "the catalogue": reading a user's items always means base plus overrides. A user-added item cannot carry a TypeScript function; [ADR 0006](./0006-stored-conditions-for-user-items.md) decides how it expresses its condition instead.

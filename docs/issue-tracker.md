@@ -42,7 +42,7 @@ Put new work in `Backlog`. `To Do` means a human has agreed to it, so moving a c
 
 ## Wayfinding operations
 
-The `wayfinder` skill charts a big, foggy effort as a **map** card with **ticket** cards hanging off it. Trello has no native parent/child or blocking relationships, so this board expresses them by convention.
+A big, foggy effort is charted as a **map** card with **ticket** cards hanging off it. Trello has no native parent/child or blocking relationships, so this board expresses them by convention.
 
 - **Maps** live in the `Maps` list, labelled `wayfinder:map`. The card body holds the destination, notes, decisions so far, the fog, and an index linking every ticket.
 - **Tickets** are ordinary cards labelled `wayfinder:research`, `wayfinder:prototype`, `wayfinder:grilling` or `wayfinder:task`. Each body opens with a `Map:` link back to its map and a `## Question` section.

@@ -4,7 +4,7 @@ Big, foggy efforts are charted as a **map**: a single Trello card holding the de
 
 What lands here instead is what each map produces: architectural decisions in [`docs/adr/`](./adr/), domain vocabulary in [`CONTEXT.md`](../CONTEXT.md), and specs beside this file.
 
-`docs/agents/issue-tracker.md` has the Trello conventions.
+`docs/issue-tracker.md` has the Trello conventions.
 
 ## Maps
 
