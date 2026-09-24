@@ -132,7 +132,7 @@ Two practical points for Neon specifically:
 1. **Drizzle Kit connects on its own.** It "automatically picks available database driver from your current project based on the provided `dialect`" and uses its own connection logic, not your app's ([Drizzle config](https://orm.drizzle.team/docs/drizzle-config-file)). So the driver choice above does not constrain migrations at all.
 2. **Point migrations at the direct, non-pooler string.** Neon lists "schema migrations" and `CREATE INDEX CONCURRENTLY` under direct connections ([Choosing your connection method](https://neon.com/docs/connect/choose-connection)), because DDL often wants session-level behaviour that transaction-mode PgBouncer will not give it.
 
-So: two secrets. `DATABASE_URL` (pooled) for the Lambda, `DATABASE_URL_DIRECT` (unpooled) for `drizzle-kit`. With SST v3 those are `sst.Secret` resources; only the pooled one gets linked to the function.
+So: two secrets. `DATABASE_URL` (pooled) for the Lambda, `DATABASE_URL_UNPOOLED` (unpooled) for `drizzle-kit`. With SST v3 those are `sst.Secret` resources; only the pooled one gets linked to the function.
 
 Run migrations from CI as a deploy step, not from the Lambda. Drizzle's runtime `migrate()` exists and the docs list it for serverless, but running it in a request handler means every cold container races to migrate, inside a 10-second init budget, holding locks. Not worth it here.
 

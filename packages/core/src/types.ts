@@ -34,7 +34,10 @@ export type Trip = {
   international: boolean;
 };
 
+export type ItemId = string;
+
 export type Item = {
+  id: ItemId;
   name: string;
   category: Category;
   appliesTo: (trip: Trip) => boolean;
@@ -57,4 +60,45 @@ export type PackingList = {
   trip: Trip;
   groups: PackingGroup[];
   totalItems: number;
+};
+
+export type TestMode = "oneOf" | "noneOf";
+
+export type Test =
+  | { field: "climate"; mode: TestMode; values: Climate[] }
+  | { field: "accommodation"; mode: TestMode; values: Accommodation[] }
+  | { field: "transport"; mode: TestMode; values: Transport[] }
+  | { field: "activities"; mode: TestMode; values: Activity[] }
+  | { field: "international"; value: boolean }
+  | { field: "laundryAvailable"; value: boolean }
+  | { field: "nights"; mode: "atLeast" | "atMost"; value: number };
+
+export type Situation = {
+  tests: Test[];
+};
+
+export type StoredCondition = {
+  situations: Situation[];
+};
+
+export type QuantityRule =
+  | { mode: "fixed"; value: number }
+  | { mode: "perNight"; value: number; cap?: number };
+
+export type CatalogueOverride = {
+  itemId: ItemId;
+  hidden: boolean;
+  name?: string;
+  category?: Category;
+  note?: string;
+  quantity?: QuantityRule;
+};
+
+export type UserItem = {
+  id: ItemId;
+  name: string;
+  category: Category;
+  note?: string;
+  quantity: QuantityRule;
+  condition: StoredCondition;
 };
